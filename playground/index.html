@@ -7,20 +7,29 @@
   </head>
 
   <body>
-    <button id="uploadBtn">Upload</button>
+    <button id="uploadBtn">Upload a image</button>
+    <div>
+      <img id="previewImg" style="max-width: 400px" />
+    </div>
 
     <script>
-      function sayHello() {
+      function upload(files) {
+        if (files === null || files.lenth === 0) {
+          return;
+        }
+        const file = files[0];
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://127.0.0.1:3000/file/upload');
+        xhr.open('POST', 'http://127.0.0.1:3000/files/upload');
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('Success: ', xhr.responseText);
-          } else {
-            console.log('Failed: ', xhr.status);
+            const { name: imgName } = JSON.parse(xhr.responseText);
+            const img = document.getElementById('previewImg');
+            img.src = `http://127.0.0.1:3000/files/${imgName}`;
           }
         };
-        xhr.send();
+        const fd = new FormData();
+        fd.append('file', file);
+        xhr.send(fd);
       }
 
       const btn = document.getElementById('uploadBtn');
@@ -28,11 +37,10 @@
       btn.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.jpg,.png,.jpeg,.gif';
+        input.accept = 'image/*';
+        input.multiple = true;
         input.addEventListener('change', () => {
-          console.log(input.files[0]);
-          sayHello();
-          btn.innerText = 'success';
+          upload(input.files);
         });
         input.click();
       });
